@@ -1,0 +1,10 @@
+PyYAML
+requests
+spotipy
+yt-dlp
+textual
+rich
+mutagen
+librosa
+numpy
+pyloudnorm

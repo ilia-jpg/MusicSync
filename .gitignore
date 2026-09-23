@@ -1,0 +1,50 @@
+# Local credentials and configuration
+.env
+.env.*
+config.yaml
+config.yaml.*
+.cache
+.cache-*
+*.pem
+*.key
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Local catalog, media, exports, and runtime output
+*.db
+*.db-*
+*.sqlite*
+/library/
+/cache/
+/logs/
+/exports/
+/exports_root/
+/musicsync-circuit-*/
+*.mp3
+*.mp4
+*.m4a
+*.wav
+*.flac
+*.ogg
+*.opus
+*.webm
+*.part
+*.log
+.tmp*
+
+# Local research and development notes
+/tempo_audit_archive/
+/HANDOFF_*.md
+/.agents/
+/.codex/
+.DS_Store
+Thumbs.db

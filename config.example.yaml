@@ -1,0 +1,36 @@
+{
+  "database_path": "./database.db",
+  "library_root": "./library",
+  "spotify": {
+    "client_id": "YOUR_CLIENT_ID_HERE",
+    "client_secret": "YOUR_CLIENT_SECRET_HERE"
+  },
+  "youtube": {
+    "max_results": 10
+  },
+  "audio_analysis": {
+    "worker_profile": "1p8t"
+  },
+  "matching": {
+    "auto_accept_threshold": 0.9,
+    "similarity_variance": 0.05,
+    "max_review_candidates": 3,
+    "weights": {
+      "title": 0.33,
+      "artist": 0.33,
+      "duration": 0.34
+    },
+    "penalties": {
+      "live": 0.15,
+      "karaoke": 0.5,
+      "cover": 0.3,
+      "instrumental": 0.2,
+      "official": -0.15
+    }
+  },
+  "exports": {
+    "roots": [
+      "../exports_root"
+    ]
+  }
+}

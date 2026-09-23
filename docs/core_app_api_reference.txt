@@ -1,0 +1,524 @@
+MusicSync Core App-Layer API Reference
+======================================
+
+Purpose
+-------
+This file documents the public, app-facing methods in the core layer that CLI, TUI, GUI,
+and other application code should use.
+
+It intentionally avoids infrastructure internals, raw SQL, and private methods.
+
+The programmer should treat this as the external contract of the core package.
+
+
+1. CollectionManager
+--------------------
+
+Class: core.collections.CollectionManager
+
+Constructor
+-----------
+CollectionManager(db)
+  - Expects: db, an initialized DatabaseManager instance.
+  - Gives: A manager that can query collections, tracks, media, and collection membership.
+
+Public methods
+--------------
+
+get_all_collections() -> list[dict]
+  - Gives: All active collections in a simple dictionary form.
+  - Each dict contains at least:
+      - collection_id: string
+      - name: string
+      - status: string or None
+      - source_type: string or None
+      - track_count: number of active items in the collection
+  - Expects: Nothing.
+  - Notes: Intended for collection lists and summary screens.
+
+save_collection(collection, job_context=None) -> str
+  - Expects:
+      - collection: an infrastructure.models.Collection object
+      - job_context: optional JobContext-like object for progress/cancellation
+  - Gives: The collection_id of the saved or refreshed collection.
+  - Notes: Refreshes an external collection into the database.
+
+save_media_item(item) -> str
+  - Expects:
+      - item: an infrastructure.models.MediaItem object
+  - Gives: The song_id for the media item.
+  - Notes: Stores or reuses a media item in the catalog.
+
+create_custom_collection(name: str) -> str
+  - Expects:
+      - name: human-readable collection name
+  - Gives: A newly created collection_id.
+  - Notes: Creates a manual collection entry.
+
+get_all_media_items() -> list[dict]
+  - Gives: All media catalog items as dictionaries.
+  - Each dict contains at least:
+      - song_id
+      - title
+      - artist
+      - media_type
+      - status
+  - Expects: Nothing.
+  - Notes: Useful for library/media overview screens.
+
+add_standalone_item(title, artist, media_type='music', url=None) -> str
+  - Expects:
+      - title: string
+      - artist: string
+      - media_type: optional string, default 'music'
+      - url: optional direct acquisition URL
+  - Gives: A newly created song_id.
+  - Notes: Adds an item that is not yet attached to any collection.
+
+add_item_to_collection(collection_id, song_id) -> None
+  - Expects:
+      - collection_id: existing collection id
+      - song_id: existing media item id
+  - Gives: Nothing.
+  - Notes: Adds an existing song to a collection.
+
+get_collection_tracks(collection_id) -> list[dict]
+  - Expects:
+      - collection_id: string
+  - Gives: The songs belonging to that collection.
+  - Each dict contains at least:
+      - song_id
+      - title
+      - artist
+      - song_status
+      - position
+      - membership_status
+      - added_at
+      - archived_at
+  - Notes: Intended for collection detail lists and track browsing.
+
+get_track_details(song_id) -> dict
+  - Expects:
+      - song_id: string
+  - Gives: One detailed media record.
+  - Returned dict may include:
+      - all song fields from the songs table
+      - youtube_id from an approved match
+      - filepath from a downloaded file
+      - collections: list of collection names that contain the item
+  - Notes: Use this for media details screens.
+
+remove_item_from_collection(collection_id, song_id) -> None
+  - Expects:
+      - collection_id: existing collection id
+      - song_id: existing track/media id
+  - Gives: Nothing.
+  - Notes: Removes an item from a collection membership.
+
+delete_standalone_item(song_id) -> None
+  - Expects:
+      - song_id: song id to remove from the catalog
+  - Gives: Nothing.
+  - Notes: Deletes a stand-alone media item from the library catalog.
+
+search_media(query: MediaQuery) -> list[dict]
+  - Expects:
+      - query: a MediaQuery dataclass (see below)
+  - Gives: Matching media items as dictionaries.
+  - Notes: This is the main query API for filtered media browsing.
+
+count_media(query: MediaQuery) -> int
+  - Expects:
+      - query: a MediaQuery dataclass
+  - Gives: The number of matching media items without returning all rows.
+  - Notes: Use this for counts, pagination, and summary displays.
+
+query(query_params: CollectionQuery) -> list[Collection]
+  - Expects:
+      - query_params: a CollectionQuery dataclass (see below)
+  - Gives: Matching collection domain objects.
+  - Notes: This is the collection-focused query API for richer collection filters.
+
+
+2. ExportManager
+---------------
+
+Class: core.exports.ExportManager
+
+Constructor
+-----------
+ExportManager(config, db)
+  - Expects:
+      - config: a ConfigManager-like object
+      - db: a DatabaseManager-like object
+  - Gives: A manager for export creation, update, and recovery.
+
+Public methods
+--------------
+
+create_export(collection_id, target_path, mode='STATIC', job_context=None) -> Optional[str]
+  - Expects:
+      - collection_id: string
+      - target_path: destination folder path
+      - mode: 'STATIC' or 'MANAGED'; default 'STATIC'
+      - job_context: optional progress/cancellation object
+  - Gives:
+      - export_id if mode is 'MANAGED' and export registration succeeds
+      - None otherwise
+  - Notes: Static exports copy downloaded tracks into a folder. Managed exports create the folder, write the manifest, and store an empty export record; update_managed_export populates the folder later.
+
+update_managed_export(export_id, job_context=None) -> None
+  - Expects:
+      - export_id: existing managed export id
+      - job_context: optional progress/cancellation object
+  - Gives: Nothing.
+  - Notes: Rebuilds a managed export folder from the current collection contents.
+
+delete_managed_export(export_id, delete_folder=False) -> None
+  - Expects:
+      - export_id: existing export id
+      - delete_folder: if True, remove the export folder from disk as well
+  - Gives: Nothing.
+  - Notes: Removes export metadata; optionally deletes the directory.
+
+scan_and_recover(job_context=None) -> None
+  - Expects:
+      - job_context: optional progress/cancellation object
+  - Gives: Nothing.
+  - Notes: Scans export manifests and repairs export paths in the database.
+
+get_managed_exports() -> list[dict]
+  - Gives: Managed export records.
+  - Each dict contains at least:
+      - export_id
+      - target_path
+      - last_updated
+      - collection_name
+  - Expects: Nothing.
+  - Notes: Intended for export lists and export detail screens.
+
+export_media(media_items, target_path, job_context=None) -> int
+  - Expects:
+      - media_items: list of media dictionaries from CollectionManager/search results
+      - target_path: destination folder path
+      - job_context: optional progress/cancellation object
+  - Gives: Number of files actually copied.
+  - Notes: Use for ad-hoc export of selected media items.
+
+
+3. JobManager
+------------
+
+Class: core.jobs.JobManager
+
+Constructor
+-----------
+JobManager(max_workers=4)
+  - Expects: number of worker threads to use.
+  - Gives: A background task scheduler for long-running operations.
+
+Public methods
+--------------
+
+submit(*args, **kwargs) -> str
+  - Expects:
+      - A callable worker function plus job metadata, for example:
+          - job_type=JobType.DOWNLOAD_COLLECTION
+          - description="..."
+          - target_func=<callable>
+      - Any additional arguments needed by the worker function
+  - Gives: A newly generated job_id.
+  - Notes: Use this to queue background work.
+
+get_job(job_id) -> Optional[Job]
+  - Expects:
+      - job_id: string
+  - Gives: A Job object if found, otherwise None.
+  - Notes: Use this to inspect a single job.
+
+get_all_jobs() -> list[Job]
+  - Gives: Current jobs in memory.
+  - Notes: Use this to render the jobs dashboard.
+
+get_available_actions(job_id) -> list[str]
+  - Expects:
+      - job_id: string
+  - Gives: Action names that are valid for that job state, such as ['Pause', 'Cancel'] or ['Retry', 'Remove'].
+  - Notes: Use this to populate action hints in the UI.
+
+cancel(job_id) -> None
+  - Expects:
+      - job_id: string
+  - Gives: Nothing.
+  - Notes: Requests cancellation of a queued/running/paused job.
+
+pause(job_id) -> None
+  - Expects:
+      - job_id: string
+  - Gives: Nothing.
+  - Notes: Pauses a running job.
+
+resume(job_id) -> None
+  - Expects:
+      - job_id: string
+  - Gives: Nothing.
+  - Notes: Resumes a paused job.
+
+retry(job_id) -> str
+  - Expects:
+      - job_id: string of a failed job
+  - Gives: A new job_id for the retried task.
+  - Notes: Only failed jobs can be retried.
+
+remove_job(job_id) -> None
+  - Expects:
+      - job_id: string of a completed/failed/cancelled job
+  - Gives: Nothing.
+  - Notes: Deletes a finished job record.
+
+cleanup_finished_jobs() -> None
+  - Expects: Nothing.
+  - Gives: Nothing.
+  - Notes: Removes completed, failed, and cancelled jobs from memory.
+
+shutdown(wait=True) -> None
+  - Expects: Nothing.
+  - Gives: Nothing.
+  - Notes: Stops background workers and cancels in-flight tasks.
+
+
+4. LibraryManager
+-----------------
+
+Class: core.library.LibraryManager
+
+Constructor
+-----------
+LibraryManager(config, db)
+  - Expects:
+      - config: ConfigManager-like object
+      - db: DatabaseManager-like object
+  - Gives: A manager for physical-media file paths and file registration.
+
+Public methods
+--------------
+
+get_expected_path(media_type, artist, title) -> Path
+  - Expects:
+      - media_type: 'music', 'podcast', 'audiobook', etc.
+      - artist: string
+      - title: string
+  - Gives: A Path object for where the downloaded file should live.
+  - Notes: Use this to compute the expected disk location before download or verification.
+
+register_file(song_id, filepath) -> None
+  - Expects:
+      - song_id: existing media id
+      - filepath: file path on disk
+  - Gives: Nothing.
+  - Notes: Marks a file as downloaded and updates the song status to DOWNLOADED.
+
+verify_library(job_context=None) -> None
+  - Expects:
+      - job_context: optional progress/cancellation object
+  - Gives: Nothing.
+  - Notes: Verifies that downloaded files still exist on disk and repairs DB state if files are missing.
+
+
+5. AcquisitionManager
+--------------------
+
+Class: core.acquisition.AcquisitionManager
+
+Constructor
+-----------
+AcquisitionManager(config, db, library)
+  - Expects:
+      - config: ConfigManager-like object
+      - db: DatabaseManager-like object
+      - library: LibraryManager instance
+  - Gives: A downloader for media items.
+
+Public methods
+--------------
+
+download_media(media_items, job_context=None) -> None
+  - Expects:
+      - media_items: list of media dictionaries, usually from CollectionManager.search_media(...)
+      - job_context: optional progress/cancellation object
+  - Gives: Nothing.
+  - Notes: Downloads the supplied media items to the physical library. This is a long-running operation and is typically queued as a background job.
+
+
+6. ReviewManager
+----------------
+
+Class: core.review.ReviewManager
+
+Constructor
+-----------
+ReviewManager(db)
+  - Expects:
+      - db: DatabaseManager-like object
+  - Gives: A CLI/TUI-facing review workflow helper.
+
+Public methods
+--------------
+
+review_media(media_items) -> None
+  - Expects:
+      - media_items: list of media items requiring human review
+  - Gives: Nothing.
+  - Notes: This is an interactive, console-driven workflow for approving or rejecting matches.
+
+
+7. MatchingEngine
+-----------------
+
+Class: core.matching.MatchingEngine
+
+Constructor
+-----------
+MatchingEngine(config, db)
+  - Expects:
+      - config: ConfigManager-like object
+      - db: DatabaseManager-like object
+  - Gives: An engine that discovers and scores YouTube candidate matches for discovered tracks.
+
+Public methods
+--------------
+
+process_discovered_tracks(job_context=None) -> None
+  - Expects:
+      - job_context: optional progress/cancellation object
+  - Gives: Nothing.
+  - Notes: Scans discovered songs, searches for candidates, and writes match/review status changes into the database.
+
+
+8. SettingsManager
+------------------
+
+Class: core.settings.SettingsManager
+
+Constructor
+-----------
+SettingsManager(config_path='config.yaml')
+  - Expects:
+      - config_path: filesystem path to the YAML configuration file
+  - Gives: A config-access layer for the app.
+
+Public methods
+--------------
+
+load() -> None
+  - Expects: Nothing.
+  - Gives: Nothing.
+  - Notes: Reloads config.yaml into memory.
+
+save() -> None
+  - Expects: Nothing.
+  - Gives: Nothing.
+  - Notes: Writes the in-memory configuration to disk.
+
+get(path, default=None) -> Any
+  - Expects:
+      - path: dot-notated key, for example 'matching.auto_accept_threshold' or 'exports.roots'
+      - default: value returned if the key does not exist
+  - Gives: The current config value or the fallback default.
+  - Notes: Use this for all app-layer config reads.
+
+set(path, value) -> None
+  - Expects:
+      - path: dot-notated key
+      - value: new value to store
+  - Gives: Nothing.
+  - Notes: Updates the in-memory config; call save() to persist.
+
+reset(category) -> None
+  - Expects:
+      - category: top-level schema category such as 'matching' or 'exports'
+  - Gives: Nothing.
+  - Notes: Restores schema defaults for the category.
+
+reset_all() -> None
+  - Expects: Nothing.
+  - Gives: Nothing.
+  - Notes: Resets all known schema categories.
+
+get_categories() -> list[str]
+  - Expects: Nothing.
+  - Gives: Top-level setting categories defined in the schema.
+
+get_settings(category) -> dict
+  - Expects:
+      - category: top-level category name
+  - Gives: The current setting dictionary for that category.
+
+get_schema() -> dict
+  - Expects: Nothing.
+  - Gives: The full schema definition used by the settings system.
+
+get_penalties() -> dict[str, float]
+  - Expects: Nothing.
+  - Gives: Matching penalties used by the matching engine.
+
+add_penalty(keyword, value) -> None
+  - Expects:
+      - keyword: penalty label
+      - value: numeric penalty weight
+  - Gives: Nothing.
+  - Notes: Adds or overwrites a matching penalty.
+
+remove_penalty(keyword) -> None
+  - Expects:
+      - keyword: penalty label to remove
+  - Gives: Nothing.
+  - Notes: Removes a penalty from the current config.
+
+
+9. App-Layer Query Dataclasses
+-----------------------------
+
+These are not managers, but they are the standard input objects for app-facing queries.
+
+core.models.MediaQuery
+  - Fields:
+      - text: optional text search over title/artist
+      - collection_id: optional collection filter
+      - source_collection_id: optional source collection filter
+      - media_type: optional media type filter
+      - downloaded: optional True/False to filter downloaded items
+      - matched: optional True/False to filter matched items
+      - archived: optional True/False to filter archived collection memberships
+      - orphaned: optional True/False to filter orphaned items
+      - file_missing: optional True/False to filter missing file paths
+      - in_review_queue: optional True/False to filter review-queue items
+      - sort_by: sort key, default 'title'
+      - sort_order: 'asc' or 'desc', default 'asc'
+      - limit: optional max row count
+      - offset: optional offset for pagination
+
+core.models.CollectionQuery
+  - Fields:
+      - archived: optional True/False
+      - source_type: optional source-type filter
+      - name_contains: partial collection name filter
+      - min_items: minimum item count
+      - max_items: maximum item count
+
+
+10. Summary for App Programmers
+------------------------------
+
+Use these classes from the core layer:
+  - CollectionManager for collections, media catalog, track details, and search.
+  - ExportManager for export creation, update, and managed export browsing.
+  - JobManager for background jobs and actions.
+  - LibraryManager for file-path calculation and file registration.
+  - AcquisitionManager for downloading media.
+  - ReviewManager for interactive review workflows.
+  - MatchingEngine for discovered-track matching work.
+  - SettingsManager for app configuration.
+
+Do not call infrastructure classes directly from application code.
+Do not write SQL by hand in CLI/TUI/GUI code.
