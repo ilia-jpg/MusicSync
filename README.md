@@ -21,7 +21,15 @@ See the [user guide](docs/user-guide.md) for your first collection and optional 
 
 Python 3.11 is recommended. Install FFmpeg and make sure `ffmpeg` is available on your PATH for media processing. The legacy CLI uses Windows-specific input handling; Windows is the primary development platform.
 
-From the project folder, create a virtual environment and install dependencies:
+After extracting the ZIP, open folders until you can see **both `requirements.txt` and `main_tui.py`**. Windows may create an outer extraction folder containing another `MusicSync-main` folder; open that inner folder too. In File Explorer, click the address bar, type `powershell`, and press Enter to open PowerShell in the correct folder.
+
+Check the location first:
+
+```powershell
+Get-Item requirements.txt, main_tui.py
+```
+
+Both files must be listed. If either is missing, open the inner project folder before continuing. Then create a virtual environment and install dependencies:
 
 ```powershell
 python -m venv .venv

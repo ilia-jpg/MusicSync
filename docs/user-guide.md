@@ -6,13 +6,25 @@ MusicSync's supported interface is the TUI: the interactive terminal application
 
 1. Download the repository using GitHub's **Code > Download ZIP**, then extract it (or clone the repository).
 2. Install standard Windows Python 3.11 or newer and FFmpeg. Ensure `python` and `ffmpeg` are available in your terminal.
-3. Open PowerShell in the extracted project folder and run:
+3. Open the extracted folder in File Explorer. **Keep opening folders until you see both `requirements.txt` and `main_tui.py`.** Windows may put a `MusicSync-main` folder inside an outer folder also named `MusicSync-main`. The outer folder is not the project folder.
+4. In the folder containing those files, click File Explorer's address bar, type `powershell`, and press Enter.
+5. Confirm that PowerShell is in the correct folder:
+
+```powershell
+Get-Item requirements.txt, main_tui.py
+```
+
+Both files should be listed without an error. For example, if you extracted into `Downloads\MusicSync-main` and it contains another `MusicSync-main`, the project folder is `Downloads\MusicSync-main\MusicSync-main`. From the outer folder, run `cd .\MusicSync-main` to enter it.
+
+6. Only after confirming the files are present, run:
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 .venv\Scripts\python main_tui.py
 ```
+
+The filename is `main_tui.py`, with an underscore and no backslash before it. Copy commands directly from the code block.
 
 Run the last command again whenever you want to open MusicSync. Always start it from the same project folder: configuration and the default database are relative to that folder. On first launch, the app creates its configuration and catalog. You do not need to copy an example file or enter Spotify credentials.
 
@@ -69,6 +81,7 @@ Keep your client secret and login tokens private. Your real `config.yaml` and `.
 - **Spotify setup incomplete:** Enter both real credentials; blank values and example placeholders are rejected.
 - **Spotify login works but an import fails:** Check app-owner Premium status, user access, and the job error. Authentication does not guarantee access to every Spotify endpoint or playlist.
 - **A download or conversion fails:** Check the Jobs error and verify `ffmpeg -version` works in the same terminal. External services may impose restrictions.
+- **Could not open requirements file:** You are probably in the outer extraction folder. Open the folder containing both `requirements.txt` and `main_tui.py`, then rerun the setup commands there. If neither file exists anywhere in the extracted download, download and extract the repository ZIP again. The pip update notice is unrelated to this error.
 - **A Python module is missing:** Install requirements using the same virtual-environment Python used to launch the app.
 - **Audio analysis fails:** Verify the analysis dependencies installed successfully and that the track has a readable local audio file.
 - **Startup fails:** Read the log location printed by the launcher. Logs can contain local paths and service details; review them before sharing.
