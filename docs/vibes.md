@@ -230,7 +230,7 @@ $$
 The stored Intensity and Dynamics values are:
 
 $$
-I = \operatorname{mean}_t(r_t),
+I = \frac{1}{T}\sum_t r_t,
 \qquad
 D = \frac{Q_{0.90}(r_t)}{I}.
 $$
@@ -250,7 +250,7 @@ For example, 600 detected onsets over 200 seconds gives Activity 3/s. These are 
 Librosa estimates a sequence of local tempos $b_1,\ldots,b_T$ from the onset-strength envelope. MusicSync stores:
 
 $$
-b_\mathrm{raw}=\operatorname{median}(b_t),
+b_\mathrm{raw}=\mathrm{median}(b_t),
 \qquad
 \sigma_b=\sqrt{\frac{1}{T}\sum_t(b_t-\bar b)^2}.
 $$
@@ -271,14 +271,14 @@ c=\frac{E_{300\text{–}3400\,\mathrm{Hz}}}{E_{80\text{–}10000\,\mathrm{Hz}}},
 h_r=\frac{\mathrm{RMS}(h)}{\max(\mathrm{RMS}(y),10^{-12})}.
 $$
 
-Here each band energy sums spectral power over the included bins and all frames. Define $R(z;a,b)=\operatorname{clip}((z-a)/(b-a),0,1)$. The score is:
+Here each band energy sums spectral power over the included bins and all frames. Define $R(z;a,b)=\min(1,\max(0,(z-a)/(b-a)))$. The score is:
 
 $$
 V=0.45R(c;0.35,0.70)+0.35R(v;0.50,0.85)+0.20R(h_r;0.35,0.80),
 $$
 
 $$
-\mathrm{Instrumentalness}=\operatorname{clip}(1-V,0,1).
+\mathrm{Instrumentalness}=\min(1,\max(0,1-V)).
 $$
 
 These frequency bands also contain many instruments. The score is therefore a hand-designed proxy, not a speech recognizer, lyric detector, learned vocal separator, or calibrated probability that the song is instrumental. If the energy is unusable or extraction fails, the measurement is missing rather than evidence of silence or absent vocals.
