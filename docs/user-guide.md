@@ -2,10 +2,71 @@
 
 MusicSync's supported interface is the TUI: the interactive terminal application launched with `main_tui.py`. The old `main.py` CLI is unmaintained and may not match current functionality.
 
+## Contents
+
+- [Concepts and source differences](#the-concepts-before-the-buttons)
+- [Install and launch](#install-and-launch-on-windows)
+- [Navigation](#find-your-way-around)
+- [What each menu is for](#what-each-menu-is-for)
+- [First collection](#try-your-first-collection-without-spotify)
+- [Review](#review-and-resolving-a-bad-source)
+- [Analysis and Vibes](#audio-analysis-and-vibe-collections)
+- [Status reference](#status-reference)
+- [Love and boo](#love-and-boo-outside-circuits)
+- [Circuits: complete walkthrough](circuits.md)
+- [Optional Spotify setup](#optional-spotify-setup)
+- [Troubleshooting](#common-problems)
+
+## The concepts before the buttons
+
+MusicSync separates **knowing about a song**, **having its audio**, and **putting a copy on a device**. A song can appear in the catalog long before you have a playable file.
+
+| Term | Meaning | Example |
+| --- | --- | --- |
+| Catalog / Media | MusicSync's records of tracks, their sources, statuses, and local file locations | A title imported from a chart, with no audio yet |
+| Library | The managed audio files on your computer | An MP3 under `library/` |
+| Collection | A named list of catalog tracks | A YouTube playlist, a local-folder import, or your own selection |
+| Group | A way to organize collections in the interface | A group containing several workout collections |
+| Match | An identified source from which audio can be acquired | A YouTube video chosen for a title imported from Spotify |
+| Review | Your decision about an uncertain or unsuitable match | Choosing the album recording instead of a live performance |
+| Download / acquisition | Obtaining a local file, either from a remote source or by copying an existing local file | Fetching audio and converting it to MP3 |
+| Export | A copy of local music in a destination folder | A collection copied to a USB stick |
+| Circuit | A persistent player queue that keeps pending songs and replaces heard ones | A 25-track rotation for an old MP3 player |
+| Job | A background operation | Importing a playlist or copying a refill |
+
+A collection is not itself a folder full of audio. Multiple collections can refer to the same catalog song, so organizing a song into another collection does not inherently require downloading another copy. Grouping collections also does not move their audio files.
+
+### Match versus download: a concrete example
+
+Suppose a chart tells MusicSync that a song is called **Example Song** by **Example Artist**. That gives it a track to look for, but no audio file.
+
+1. **Import** records the title and artist. The track is Discovered.
+2. **Match** searches acquisition sources and compares candidates. A strong candidate can be accepted automatically; uncertain results go to Review.
+3. **Review**, if needed, lets you choose or supply an appropriate source. Approval makes the track Matched.
+4. **Download** gets audio from that source and stores it locally. A successful match alone does not make the song playable offline.
+5. **Export or Circulate** copies the local audio onto another folder or device.
+
+Matching is a best-effort identification step. A high confidence score can still pick the wrong recording. Check tracks where the version matters, such as studio versus live, cover versus original, or edited versus full-length.
+
+### The starting point depends on the source
+
+| Source | What import supplies | What happens next |
+| --- | --- | --- |
+| Spotify | Track metadata from an eligible configured developer app | Match to an acquisition source, review if needed, then download. This does not download audio from Spotify. |
+| Billboard | Chart titles and artists | Match, review if needed, then download |
+| YouTube | Track metadata plus a known YouTube source | Normally starts Matched; download the audio. You can rematch if the source is unsuitable. |
+| Local Folder | Existing MP3 files and their metadata | The import job copies files into MusicSync's library automatically; no YouTube search is needed. Successful copies show as downloaded. |
+| Manual Collection | A list you assemble yourself | Existing tracks retain their state. Newly added metadata without an audio source still needs matching. |
+| Vibe Collection | Tracks selected from the catalog by saved rules | Refresh recomputes membership. Analysis-based rules need analyzed audio; creating a Vibe does not obtain new audio. |
+
+These are typical starting states for newly discovered songs. A track already known to MusicSync may retain an existing match or local file. Network availability, private content, and source restrictions can affect imports and downloads.
+
+**Refresh is not Download.** Refresh asks a source for its current track list, or reruns a Vibe's rules. Download obtains audio for tracks with an acquisition source. The initial Local Folder import also copies audio into the library. A later Refresh updates the listing; newly listed tracks may still need Download to copy their local files.
+
 ## Install and launch on Windows
 
 1. Download the repository using GitHub's **Code > Download ZIP**, then extract it (or clone the repository).
-2. Install standard Windows Python 3.11 or newer and FFmpeg. Ensure `python` and `ffmpeg` are available in your terminal.
+2. Install standard Windows Python 3.11 or newer and FFmpeg. For FFmpeg, run `winget install --id Gyan.FFmpeg --exact --source winget`, close the terminal completely, and reopen it. Check `python --version`, `ffmpeg -version`, and `ffprobe -version` before continuing.
 3. Open the extracted folder in File Explorer. **Keep opening folders until you see both `requirements.txt` and `main_tui.py`.** Windows may put a `MusicSync-main` folder inside an outer folder also named `MusicSync-main`. The outer folder is not the project folder.
 4. In the folder containing those files, click File Explorer's address bar, type `powershell`, and press Enter.
 5. Confirm that PowerShell is in the correct folder:
@@ -43,6 +104,154 @@ Use the arrow keys to select a row and Enter to open it. Esc backs out of a scre
 | 7 | Settings | Change library, export, and integration settings |
 
 Navigation shortcuts apply outside text-entry flows. Finish or cancel your input before changing screens.
+
+## What each menu is for
+
+### Home: decide what needs attention
+
+Use Home when you want an overview rather than a particular song. It summarizes the library and offers actions for work such as matching discovered tracks, reviewing uncertain matches, and downloading ready tracks. Home is a starting point for moving unfinished tracks toward usable local audio.
+
+### Collections: work with a list of songs
+
+Use Collections when your task concerns a playlist, chart, album-like group, or selection. Press `A` to choose how to create/import one. Open a collection to see its tracks; use the action panel for refresh, download, history, export, and organization actions.
+
+- **External collections** keep a relationship to a source such as YouTube, Spotify, Billboard, or a local folder. Refresh obtains its current contents.
+- **Manual collections** hold tracks you choose. They do not need a remote playlist.
+- **Vibe collections** store rules that select tracks from your catalog. Refresh applies those rules again.
+- **Groups** organize collections in the list. A group is not a circuit and does not deliver music anywhere.
+- **History** shows saved collection revisions/snapshots so you can inspect previous membership. A snapshot is a record of the list, not an audio backup.
+- **Archive** hides a collection from the normal active view. It does not mean its songs have been physically erased from your library.
+
+For example, make a manual collection for a road trip, or import an existing playlist and refresh it when its source changes. Choose a circuit only when you want its repeating listening/refill behavior.
+
+### Media: work with individual tracks across the catalog
+
+Use Media to find a song without remembering its collection. It includes tracks without files, not just downloaded music. Filters help isolate discovered, matched, review, failed, downloaded, or archived tracks. Open a track for its metadata and source details; the action panel and `/` menu expose the actions appropriate to its state.
+
+Match searches for an audio source. Rematch searches again when you want a different source. Download acquires the audio. Play needs a usable local file and opens playback through the computer's associated player. Love/Boo records your preference; it does not approve a match.
+
+### Circuits: maintain a queue on a simple player
+
+Use Circuits when you want a small selection to evolve as you listen. A circuit remembers its destination, source pool, target count, and feedback. The central action is **Circulate**: inspect progress, preserve unheard files, and refill.
+
+Read the [full circuit walkthrough](circuits.md) before using this with your player. It explains the missing-file progress marker, the preview, why filenames have prefixes, and how Global/Here love and boo affect refills.
+
+### Exports: deliver a collection to a folder
+
+Use Exports when you want an output folder corresponding to a collection, without the circuit's listening-progress logic. Exporting uses audio already on your computer.
+
+A managed export remembers its destination and collection. Creating one initially creates an empty managed destination; **Update** fills it. Later updates rebuild the output from currently exportable tracks. **Shuffle** makes a randomized output, optionally limited in size. **Clear** empties exported MP3s while retaining the managed export. **Recover** scans configured export roots for MusicSync manifests that can be registered again.
+
+Use a dedicated destination folder: Update, Shuffle, and Clear can delete MP3 files in that output folder. They are not merely additive copying operations. Delete has options concerning the folder itself; read the confirmation. None of these actions should be aimed at your only copy of original music.
+
+Unlike a circuit, an export does not treat deletion of the last-played track as listening progress. For an album you want to keep unchanged on a device, an export is usually the simpler choice.
+
+### Jobs: see what the application is doing
+
+Imports, matching, downloads, analysis, export updates, and circulation can run in the background. Open Jobs to see progress and error details. A queued job has not necessarily started yet. Where offered, pause/cancel actions are cooperative: the current operation may need to reach a stopping point.
+
+Job history is in memory for the current app session. Wait for file-writing jobs to finish before disconnecting a player. If a batch completes but a particular track is still unavailable, inspect that track's state and the job details; completion of the batch is not proof that every source was usable.
+
+### Settings: paths, optional integrations, and processing behavior
+
+Use Settings to choose the managed library location and valid export roots, configure optional Spotify credentials, and adjust matching, YouTube, and audio-analysis behavior. Start with defaults unless you have a reason to change them.
+
+Matching thresholds control how readily a candidate is accepted without review. More automatic acceptance trades manual work for the risk of a wrong recording. Audio-analysis worker profiles control processing concurrency; larger settings are not automatically faster on every computer. YouTube browser-cookie configuration is optional and relevant only when a source needs it.
+
+Changing a path setting is not a migration tool: do not assume existing files or the open database move automatically. Keep the original locations backed up and restart when changing the database path. Spotify credentials are optional and currently visible as text in Settings; do not include them in screenshots.
+
+## Review and resolving a bad source
+
+Review means MusicSync needs a decision about which recording/source to use. It is not a rating of whether you like the music.
+
+1. Use Home's review action, a track's Review action, or the `/` command menu to open the relevant review items.
+2. Inspect candidate titles, durations, and other displayed details. Use the screen's current action hints to choose/approve a candidate or supply a source manually.
+3. If you cannot choose confidently, skip it and return later rather than approving an unrelated recording.
+4. After approval, download the track. Approval selects a source; it does not itself copy the audio.
+
+A source can become unavailable after it was matched. Inspect the failure, retry when appropriate, or rematch to a different recording. A network or conversion error is not automatically evidence that the title/artist match was wrong.
+
+## Audio analysis and Vibe collections
+
+Audio analysis examines local audio and stores measurements used to describe and filter tracks. It is separate from matching and downloading. Run analysis on downloaded tracks using the available analysis actions or `/` menu before relying on audio-based Vibe rules.
+
+A Vibe collection is a saved selection rule, such as warm-toned music with moderate activity. The editor includes dimensions such as tempo, tempo stability, activity, intensity, dynamics, tone, and texture. These are computed descriptions of sound, not guaranteed genre, mood, or vocal labels.
+
+The rule structure is **Required Rules AND any normal rule group**. Within each group, its all/any setting controls how its rules combine. With no normal groups, the Required Rules can define the collection by themselves. Preview the results before saving, and refresh the Vibe after new music is analyzed or rules change. Unanalyzed tracks cannot satisfy measurements they do not have.
+
+For example, require downloaded tracks, then use one group for relaxed warm music and another for moderate clean music. The resulting collection can be a circuit source. The Vibe decides what belongs in the pool; the circuit decides what to put on the player next.
+
+## Status reference
+
+Statuses describe different things on different screens. A track can be downloaded while an export is Out Of Date and a job is Queued. These statements do not conflict.
+
+### Track availability and matching
+
+| Label / marker | Meaning | Typical next step |
+| --- | --- | --- |
+| Discovered / `?` | A catalog entry without an accepted acquisition source | Match it |
+| Matched / `M` | MusicSync has a source to acquire, but this is not proof of a local file | Download it |
+| Review / `R` | A source decision needs your attention, including uncertain or forced rematches | Review candidates or provide a suitable source |
+| Match Failed / `M!` | The current source/match is flagged as unusable | Inspect details and retry/rematch as appropriate |
+| Downloaded / checkmark | The catalog has a registered local audio path | Play, analyze, export, or include in a circuit |
+| Archived / `A` | Hidden from the normal active workflow | Use the archived view and restore if wanted |
+
+A downloaded checkmark reflects the registered file path, not a continuous disk check. If a file is moved or removed outside MusicSync, library verification is needed to reconcile the catalog. Also, the UI can prioritize a local-file checkmark over the underlying matching state.
+
+### Analysis state
+
+| State | Meaning |
+| --- | --- |
+| Missing / not analyzed | No usable current analysis is available |
+| Complete / analyzed | Analysis has been saved successfully |
+| Stale | Saved analysis exists, but some measurements use an older analyzer version |
+| Failed | Analysis could not finish; inspect the error before retrying |
+
+These concern audio measurements, not whether the song has been matched or loved.
+
+### Background jobs
+
+| State | Meaning |
+| --- | --- |
+| Queued | Waiting to run, possibly behind other work or dependencies |
+| Running | Currently processing |
+| Paused | Temporarily stopped at a cooperative pause point |
+| Completed | The job finished its work; inspect item details for batch-specific outcomes |
+| Failed | The job ended with an error |
+| Cancelled | The job was stopped; completed file operations are not automatically undone |
+
+### Exports
+
+| State | Meaning |
+| --- | --- |
+| Empty | The export was created or cleared; Update or Shuffle can populate it |
+| Up To Date | The saved output information agrees with the current exportable collection state |
+| Out Of Date | The collection/output information has changed since delivery |
+| Shuffled | The last output was a shuffled selection |
+| Device Disconnected | The configured destination root is unavailable |
+| Missing | The expected output folder is unavailable |
+| Missing Manifest | The folder exists but its `.musicsync.json` tracking file is absent |
+
+Up To Date and Shuffled describe recorded export state; they do not certify the integrity of every file after outside edits.
+
+### Circuits
+
+| State / wording | Meaning |
+| --- | --- |
+| Ready | The circuit has its manifest but no previous tracks to carry; circulate to fill it |
+| In Loop | A previous delivery exists and the folder/manifest are present |
+| Folder Missing | The configured folder is unavailable; check the player connection and path |
+| Needs Manifest | The folder lacks `.musiccircuit.json`; check that you have the intended folder |
+| Last heard: none yet | No missing-file progress marker is currently detected |
+| Fresh tracks | Pending tracks after the inferred listening cutoff, not globally new discoveries |
+
+See [the circuit preview example](circuits.md#worked-example) for Heard, Missing markers, and Add counts.
+
+## Love and boo outside circuits
+
+`L` loves and `B` boos a track in ordinary Media/collection track lists. These are Global preferences. Pressing the same rating again returns it to neutral. The rating belongs to the catalog track, so it is not a separate vote each time the track appears in another collection.
+
+Love/Boo is independent of Match/Review: you can dislike a perfectly correct recording or love a song whose audio still needs downloading. Neither rating downloads, deletes, or archives the song. Circuit refill uses these preferences; **Global boo reduces selection likelihood rather than banning the track**. To exclude it from a particular circuit's new refills, use that circuit's **Here** boo. Read [the feedback guide](circuits.md#love-boo-and-neutral) for scope and save/cancel behavior.
 
 ## Try your first collection without Spotify
 

@@ -15,7 +15,9 @@ A Python music library manager with an interactive terminal interface. Bring col
 
 **Spotify is optional and disabled by default.** You can use local folders, YouTube, and Billboard without Spotify credentials.
 
-See the [user guide](docs/user-guide.md) for your first collection and optional Spotify setup.
+See the [user manual](docs/user-guide.md) for menu explanations, collections, source-specific import workflows, matching versus downloading, statuses, audio analysis, and setup.
+
+Using an older MP3 player? Start with [Circuits: a listening loop for an old MP3 player](docs/circuits.md), including a worked example and Global/Here love and boo feedback.
 
 ## Getting started
 
