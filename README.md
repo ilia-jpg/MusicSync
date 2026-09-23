@@ -19,6 +19,8 @@ See the [user manual](docs/user-guide.md) for menu explanations, collections, so
 
 Using an older MP3 player? Start with [Circuits: a listening loop for an old MP3 player](docs/circuits.md), including a worked example and Global/Here love and boo feedback.
 
+The [Vibes appendix](docs/vibes.md) explains the audio-feature vocabulary (including warm, bright, sharp, punchy, and gritty) and how to write selection rules.
+
 ## Getting started
 
 Python 3.11 is recommended. Install FFmpeg and make sure `ffmpeg` is available on your PATH for media processing. The legacy CLI uses Windows-specific input handling; Windows is the primary development platform.
@@ -52,6 +54,6 @@ Your credentials, authentication cache, music files, database, and logs stay loc
 | `plugins/` | Spotify, YouTube, Billboard, and local file integrations |
 | `tui/` | Textual interface and interactive workflows |
 | `cli/` | Original command-line interface |
-| `docs/` | User manual and circuit walkthrough |
+| `docs/` | User manual, circuit walkthrough, and Vibes appendix |
 
 See the [user manual](docs/user-guide.md) and [circuit walkthrough](docs/circuits.md) for detailed usage instructions.

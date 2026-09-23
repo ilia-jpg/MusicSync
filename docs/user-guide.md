@@ -11,6 +11,7 @@ MusicSync's supported interface is the TUI: the interactive terminal application
 - [First collection](#try-your-first-collection-without-spotify)
 - [Review](#review-and-resolving-a-bad-source)
 - [Analysis and Vibes](#audio-analysis-and-vibe-collections)
+- [Vibes appendix: feature meanings and rule language](vibes.md)
 - [Status reference](#status-reference)
 - [Love and boo](#love-and-boo-outside-circuits)
 - [Circuits: complete walkthrough](circuits.md)
@@ -175,11 +176,13 @@ A source can become unavailable after it was matched. Inspect the failure, retry
 
 Audio analysis examines local audio and stores measurements used to describe and filter tracks. It is separate from matching and downloading. Run analysis on downloaded tracks using the available analysis actions or `/` menu before relying on audio-based Vibe rules.
 
-A Vibe collection is a saved selection rule, such as warm-toned music with moderate activity. The editor includes dimensions such as tempo, tempo stability, activity, intensity, dynamics, tone, and texture. These are computed descriptions of sound, not guaranteed genre, mood, or vocal labels.
+A Vibe collection is a saved selection rule, such as warm-toned music with moderate activity. The editor supports tempo, tempo stability, activity, intensity, dynamics, tone, texture, and vocals. These are computed descriptions of sound, not guaranteed genre, mood, or vocal labels.
 
-The rule structure is **Required Rules AND any normal rule group**. Within each group, its all/any setting controls how its rules combine. With no normal groups, the Required Rules can define the collection by themselves. Preview the results before saving, and refresh the Vibe after new music is analyzed or rules change. Unanalyzed tracks cannot satisfy measurements they do not have.
+The rule structure is **all Required Rules AND all rules in at least one normal group**. Allowed values within a single feature rule can be alternatives, such as Warm or Balanced. With no normal groups, the Required Rules can define the collection by themselves. Preview the results before saving, and refresh the Vibe after new music is analyzed or rules change. Unanalyzed tracks cannot satisfy measurements they do not have.
 
-For example, require downloaded tracks, then use one group for relaxed warm music and another for moderate clean music. The resulting collection can be a circuit source. The Vibe decides what belongs in the pool; the circuit decides what to put on the player next.
+For example, require `Texture is Clean or Light`, then use one group for `Tempo is Relaxed or less` and another for `Activity is Moderate`. The resulting collection can be a circuit source. The Vibe decides what belongs in the pool; the circuit decides what to put on the player next.
+
+For plain-language explanations of every feature, including Warm versus Bright versus Sharp, supported rule syntax, and worked recipes, read the [Vibes appendix](vibes.md).
 
 ## Status reference
 
