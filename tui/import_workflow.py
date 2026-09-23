@@ -43,7 +43,7 @@ class ImportWorkflowMixin:
             return
         source_type = self.detect_url_source(url)
         if not source_type or source_type not in self.plugins:
-            self.show_status("Unsupported collection URL.")
+            self.show_status(self.spotify_unavailable_reason if source_type == "spotify" else "Unsupported collection URL.")
             return
 
         origin = flow.origin_screen_id
@@ -164,7 +164,7 @@ class ImportWorkflowMixin:
             return
         source_type = self.detect_url_source(url)
         if not source_type or source_type not in self.plugins:
-            self.show_status("Unsupported media URL.")
+            self.show_status(self.spotify_unavailable_reason if source_type == "spotify" else "Unsupported media URL.")
             return
 
         origin = flow.origin_screen_id

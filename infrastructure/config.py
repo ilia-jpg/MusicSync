@@ -12,8 +12,9 @@ class ConfigManager:
                 "database_path": "./database.db",
                 "library_root": "./library",
                 "spotify": {
-                    "client_id": "YOUR_CLIENT_ID_HERE",
-                    "client_secret": "YOUR_CLIENT_SECRET_HERE"
+                    "mode": "disabled",
+                    "client_id": "",
+                    "client_secret": ""
                 },
                 "youtube": {
                     "max_results": 10

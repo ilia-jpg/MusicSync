@@ -32,6 +32,7 @@ class SettingsManager:
             },
         },
         "spotify": {
+            "mode": {"type": "choice", "default": "disabled", "options": ["disabled", "enabled"], "desc": "Optional Spotify integration. Requires your own eligible developer app."},
             "client_id": {"type": "str", "default": "", "desc": "Spotify API client ID."},
             "client_secret": {"type": "str", "default": "", "desc": "Spotify API client secret."},
         },

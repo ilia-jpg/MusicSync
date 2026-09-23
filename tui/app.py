@@ -3036,11 +3036,14 @@ class MusicSyncApp(
         self.plugins = {}
         self.discovery_plugins = self.plugins
         self.resolver_plugins = []
+        self.spotify_unavailable_reason = ""
         try:
             spotify_plugin = SpotifySourcePlugin(self.config)
             self.discovery_plugins[spotify_plugin.source_type] = spotify_plugin
+        except ValueError as exc:
+            self.spotify_unavailable_reason = str(exc)
         except Exception:
-            pass
+            self.spotify_unavailable_reason = "Spotify could not start. Check your Spotify setup in Settings."
         try:
             youtube_plugin = YouTubeSourcePlugin(self.config)
             self.discovery_plugins[youtube_plugin.source_type] = youtube_plugin
@@ -4407,7 +4410,7 @@ class MusicSyncApp(
                     kind="add_collection_choice",
                     origin_screen_id="collections",
                     origin_actions=self.current_context_actions,
-                    options=["Manual Collection", "Spotify/YouTube/Billboard URL", "Local Folder", "YouTube Radio From Library Track", "Vibe Collection"],
+                    options=["Manual Collection", "Spotify/YouTube/Billboard URL" if "spotify" in self.plugins else "YouTube/Billboard URL", "Local Folder", "YouTube Radio From Library Track", "Vibe Collection"],
                 )
             )
 
@@ -5045,7 +5048,9 @@ class MusicSyncApp(
 
     def _reset_status_bar(self) -> None:
         self._status_persistent = False
-        self.query_one("#status-bar", Label).update("Status: Ready")
+        # A pending timer callback may run while the screen is being unmounted.
+        for bar in self.query("#status-bar").results(Label):
+            bar.update("Status: Ready")
 
 if __name__ == "__main__":
     try:

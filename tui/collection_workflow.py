@@ -371,6 +371,8 @@ class CollectionWorkflowMixin:
         source_type = collection.get("source_type")
         plugin = self.plugins.get(source_type)
         if not plugin:
+            if source_type == "spotify":
+                raise RuntimeError(self.spotify_unavailable_reason)
             raise RuntimeError(f"No source plugin available for {source_type or 'unknown source'}.")
 
         url = self.collection_manager.get_collection_source_url(collection.get("collection_id"), source_type)

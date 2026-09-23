@@ -16,12 +16,16 @@ class SpotifySourcePlugin:
     
     def __init__(self, config: ConfigManager):
         self.config = config
+
+        if self.config.get("spotify.mode", "disabled") != "enabled":
+            raise ValueError("Spotify is disabled. Enable it in Settings after configuring your own developer app.")
         
         client_id = self.config.get("spotify.client_id")
         client_secret = self.config.get("spotify.client_secret")
         
-        if not client_id or not client_secret:
-            raise ValueError("Spotify credentials missing in config.yaml")
+        credentials = (client_id, client_secret)
+        if any(not isinstance(value, str) or not value.strip() or value.strip().upper().startswith("YOUR_") for value in credentials):
+            raise ValueError("Spotify setup incomplete: add your own client ID and client secret in Settings.")
 
         self.client = spotipy.Spotify(auth_manager=SpotifyOAuth(
             client_id=client_id,

@@ -11,6 +11,12 @@ A Python music library manager with an interactive terminal interface. Bring col
 - Manage exports and music circuits, including track feedback.
 - Run long operations as background jobs in a Textual terminal interface.
 
+**Use the TUI (`main_tui.py`).** The original CLI (`main.py`) is legacy and unmaintained; it is not the supported way to use MusicSync.
+
+**Spotify is optional and disabled by default.** You can use local folders, YouTube, and Billboard without Spotify credentials.
+
+See the [user guide](docs/user-guide.md) for your first collection and optional Spotify setup.
+
 ## Getting started
 
 Python 3.11 is recommended. Install FFmpeg and make sure `ffmpeg` is available on your PATH for media processing. The legacy CLI uses Windows-specific input handling; Windows is the primary development platform.
@@ -20,17 +26,10 @@ From the project folder, create a virtual environment and install dependencies:
 ```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
-Copy-Item config.example.yaml config.yaml
 .venv\Scripts\python main_tui.py
 ```
 
-Edit `config.yaml` to choose your library, database, and export locations. For Spotify integration, supply your own Spotify application client ID and secret and configure the redirect URI as `http://127.0.0.1:8080`. The application uses a browser sign-in flow for Spotify access.
-
-The original command-line interface is also available:
-
-```powershell
-.venv\Scripts\python main.py
-```
+On first launch, MusicSync creates `config.yaml` automatically. Use Settings to choose your library and export locations. No Spotify account or API key is needed to start. For optional Spotify setup with your own developer app, see the [user guide](docs/user-guide.md#optional-spotify-setup).
 
 Your credentials, authentication cache, music files, database, and logs stay local and are excluded from version control. This repository contains the application source; it does not include a music library.
 
