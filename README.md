@@ -52,6 +52,6 @@ Your credentials, authentication cache, music files, database, and logs stay loc
 | `plugins/` | Spotify, YouTube, Billboard, and local file integrations |
 | `tui/` | Textual interface and interactive workflows |
 | `cli/` | Original command-line interface |
-| `docs/` | Architecture and interface documentation |
+| `docs/` | User manual and circuit walkthrough |
 
-See [the architecture overview](docs/overview.md) and [background job documentation](docs/jobs.md) for more detail.
+See the [user manual](docs/user-guide.md) and [circuit walkthrough](docs/circuits.md) for detailed usage instructions.

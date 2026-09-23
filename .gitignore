@@ -48,3 +48,9 @@ dist/
 /.codex/
 .DS_Store
 Thumbs.db
+
+# Internal LLM reference documents (kept locally)
+/docs/jobs.md
+/docs/overview.md
+/docs/tui_design.md
+/docs/core_app_api_reference.txt
